@@ -1,0 +1,642 @@
+{
+	"info": {
+		"_postman_id": "tasks-api-collection",
+		"name": "Tasks API - Supabase Integration",
+		"description": "Complete API collection for Tasks API with Supabase Auth integration",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/me",
+							"host": ["{{base_url}}"],
+							"path": ["api", "me"]
+						},
+						"description": "Returns the current authenticated user's ID and email from the JWT token."
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/me",
+									"host": ["{{base_url}}"],
+									"path": ["api", "me"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"user_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"email\": \"user@example.com\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Tasks",
+			"item": [
+				{
+					"name": "List Tasks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tasks?priority=high&per_page=15&page=1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tasks"],
+							"query": [
+								{
+									"key": "priority",
+									"value": "high",
+									"description": "Filter by priority: low, medium, high"
+								},
+								{
+									"key": "due_date_from",
+									"value": "2024-01-01",
+									"description": "Filter tasks due from this date"
+								},
+								{
+									"key": "due_date_to",
+									"value": "2024-12-31",
+									"description": "Filter tasks due until this date"
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (max: 100)"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Returns all tasks where the authenticated user is either the creator or assignee. Supports filtering by priority and due date range, with pagination."
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/tasks",
+									"host": ["{{base_url}}"],
+									"path": ["api", "tasks"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"data\": [\n        {\n            \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n            \"creator_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n            \"assignee_id\": \"123e4567-e89b-12d3-a456-426614174001\",\n            \"title\": \"Complete project documentation\",\n            \"description\": \"Write comprehensive documentation for the API\",\n            \"due_date\": \"2024-12-31T23:59:59+00:00\",\n            \"priority\": \"high\",\n            \"is_completed\": false,\n            \"attachment_url\": \"https://...\",\n            \"attachment_mime\": \"image/jpeg\",\n            \"created_at\": \"2024-01-01T00:00:00+00:00\",\n            \"updated_at\": \"2024-01-01T00:00:00+00:00\"\n        }\n    ],\n    \"links\": {\n        \"first\": \"...\",\n        \"last\": \"...\",\n        \"prev\": null,\n        \"next\": null\n    },\n    \"meta\": {\n        \"current_page\": 1,\n        \"per_page\": 15,\n        \"total\": 1\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Create Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "title",
+									"value": "Complete project documentation",
+									"type": "text"
+								},
+								{
+									"key": "assignee_id",
+									"value": "123e4567-e89b-12d3-a456-426614174001",
+									"type": "text",
+									"description": "UUID of the user assigned to this task"
+								},
+								{
+									"key": "description",
+									"value": "Write comprehensive documentation for the API",
+									"type": "text"
+								},
+								{
+									"key": "due_date",
+									"value": "2024-12-31",
+									"type": "text",
+									"description": "ISO 8601 date format"
+								},
+								{
+									"key": "priority",
+									"value": "high",
+									"type": "text",
+									"description": "low, medium, or high"
+								},
+								{
+									"key": "attachment",
+									"type": "file",
+									"src": [],
+									"description": "Optional: JPEG, PNG, or PDF file (max 10MB)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tasks",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tasks"]
+						},
+						"description": "Creates a new task. The creator_id is automatically set to the authenticated user. Supports optional file attachment (JPEG, PNG, PDF up to 10MB)."
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "title",
+											"value": "Complete project documentation",
+											"type": "text"
+										},
+										{
+											"key": "assignee_id",
+											"value": "123e4567-e89b-12d3-a456-426614174001",
+											"type": "text"
+										},
+										{
+											"key": "due_date",
+											"value": "2024-12-31",
+											"type": "text"
+										},
+										{
+											"key": "priority",
+											"value": "high",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/api/tasks",
+									"host": ["{{base_url}}"],
+									"path": ["api", "tasks"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"creator_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"assignee_id\": \"123e4567-e89b-12d3-a456-426614174001\",\n    \"title\": \"Complete project documentation\",\n    \"description\": \"Write comprehensive documentation for the API\",\n    \"due_date\": \"2024-12-31T23:59:59+00:00\",\n    \"priority\": \"high\",\n    \"is_completed\": false,\n    \"attachment_url\": \"https://...\",\n    \"attachment_mime\": \"image/jpeg\",\n    \"created_at\": \"2024-01-01T00:00:00+00:00\",\n    \"updated_at\": \"2024-01-01T00:00:00+00:00\"\n}"
+						},
+						{
+							"name": "Validation Error",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "title",
+											"value": "",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/api/tasks",
+									"host": ["{{base_url}}"],
+									"path": ["api", "tasks"]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"message\": \"The title field is required.\",\n    \"errors\": {\n        \"title\": [\"The title field is required.\"]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Task",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tasks/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tasks", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "123e4567-e89b-12d3-a456-426614174000",
+									"description": "Task UUID"
+								}
+							]
+						},
+						"description": "Retrieves a specific task by ID. Only the creator or assignee can access the task."
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/tasks/123e4567-e89b-12d3-a456-426614174000",
+									"host": ["{{base_url}}"],
+									"path": ["api", "tasks", "123e4567-e89b-12d3-a456-426614174000"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"creator_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"assignee_id\": \"123e4567-e89b-12d3-a456-426614174001\",\n    \"title\": \"Complete project documentation\",\n    \"description\": \"Write comprehensive documentation for the API\",\n    \"due_date\": \"2024-12-31T23:59:59+00:00\",\n    \"priority\": \"high\",\n    \"is_completed\": false,\n    \"attachment_url\": \"https://...\",\n    \"attachment_mime\": \"image/jpeg\",\n    \"created_at\": \"2024-01-01T00:00:00+00:00\",\n    \"updated_at\": \"2024-01-01T00:00:00+00:00\"\n}"
+						},
+						{
+							"name": "Forbidden",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/tasks/123e4567-e89b-12d3-a456-426614174000",
+									"host": ["{{base_url}}"],
+									"path": ["api", "tasks", "123e4567-e89b-12d3-a456-426614174000"]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"message\": \"Forbidden\"\n}"
+						},
+						{
+							"name": "Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/tasks/invalid-uuid",
+									"host": ["{{base_url}}"],
+									"path": ["api", "tasks", "invalid-uuid"]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"message\": \"Not Found\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Task",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated task title\",\n    \"description\": \"Updated description\",\n    \"priority\": \"medium\",\n    \"is_completed\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tasks/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tasks", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "123e4567-e89b-12d3-a456-426614174000",
+									"description": "Task UUID"
+								}
+							]
+						},
+						"description": "Updates a task. All fields are optional. Only assignee can set is_completed to true."
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Updated task title\",\n    \"priority\": \"medium\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/tasks/123e4567-e89b-12d3-a456-426614174000",
+									"host": ["{{base_url}}"],
+									"path": ["api", "tasks", "123e4567-e89b-12d3-a456-426614174000"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"creator_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"assignee_id\": \"123e4567-e89b-12d3-a456-426614174001\",\n    \"title\": \"Updated task title\",\n    \"description\": \"Updated description\",\n    \"due_date\": \"2024-12-31T23:59:59+00:00\",\n    \"priority\": \"medium\",\n    \"is_completed\": true,\n    \"created_at\": \"2024-01-01T00:00:00+00:00\",\n    \"updated_at\": \"2024-01-02T00:00:00+00:00\"\n}"
+						},
+						{
+							"name": "Forbidden - Cannot Complete",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"is_completed\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/tasks/123e4567-e89b-12d3-a456-426614174000",
+									"host": ["{{base_url}}"],
+									"path": ["api", "tasks", "123e4567-e89b-12d3-a456-426614174000"]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"message\": \"Forbidden\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Task",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tasks/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tasks", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "123e4567-e89b-12d3-a456-426614174000",
+									"description": "Task UUID"
+								}
+							]
+						},
+						"description": "Deletes a task. Only the creator can delete a task. If the task has an attachment, it will be deleted from storage automatically."
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/tasks/123e4567-e89b-12d3-a456-426614174000",
+									"host": ["{{base_url}}"],
+									"path": ["api", "tasks", "123e4567-e89b-12d3-a456-426614174000"]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "text",
+							"header": []
+						},
+						{
+							"name": "Forbidden",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/tasks/123e4567-e89b-12d3-a456-426614174000",
+									"host": ["{{base_url}}"],
+									"path": ["api", "tasks", "123e4567-e89b-12d3-a456-426614174000"]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"message\": \"Forbidden\"\n}"
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": []
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": []
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string",
+			"description": "Supabase Access Token (JWT). Get this from Supabase Auth after login."
+		}
+	]
+}
+
