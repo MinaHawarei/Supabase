@@ -15,8 +15,7 @@ class TaskController extends Controller
 {
     public function __construct(
         private SupabaseStorageService $storageService
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -28,12 +27,28 @@ class TaskController extends Controller
             $query->where('priority', $request->input('priority'));
         }
 
+        if ($request->has('due_from')) {
+            $query->where('due_date', '>=', $request->input('due_from'));
+        }
+
         if ($request->has('due_date_from')) {
             $query->where('due_date', '>=', $request->input('due_date_from'));
         }
 
+        if ($request->has('due_to')) {
+            $query->where('due_date', '<=', $request->input('due_to'));
+        }
+
         if ($request->has('due_date_to')) {
             $query->where('due_date', '<=', $request->input('due_date_to'));
+        }
+
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'ILIKE', "%{$search}%")
+                    ->orWhere('description', 'ILIKE', "%{$search}%");
+            });
         }
 
         $perPage = min((int) $request->input('per_page', 15), 100);
@@ -43,21 +58,36 @@ class TaskController extends Controller
             return $this->formatTask($task);
         });
 
-        return response()->json($tasks);
+        return response()->json([
+            'data' => $tasks->items(),
+            'pagination' => [
+                'current_page' => $tasks->currentPage(),
+                'last_page' => $tasks->lastPage(),
+                'per_page' => $tasks->perPage(),
+                'total' => $tasks->total(),
+            ],
+        ]);
     }
 
     public function store(StoreTaskRequest $request): JsonResponse
     {
         $userId = $request->attributes->get('supabase_user_id');
 
-        $task = Task::create([
+        $taskData = [
             'creator_id' => $userId,
             'assignee_id' => $request->input('assignee_id'),
             'title' => $request->input('title'),
             'description' => $request->input('description'),
             'due_date' => $request->input('due_date'),
             'priority' => $request->input('priority'),
-        ]);
+        ];
+
+        if ($request->has('attachment_key')) {
+            $taskData['attachment_key'] = $request->input('attachment_key');
+            $taskData['attachment_mime'] = $request->input('attachment_mime');
+        }
+
+        $task = Task::create($taskData);
 
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');

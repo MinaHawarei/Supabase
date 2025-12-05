@@ -21,6 +21,8 @@ class StoreTaskRequest extends FormRequest
             'due_date' => ['required', 'date', 'after_or_equal:today'],
             'priority' => ['required', Rule::in(['low', 'medium', 'high'])],
             'attachment' => ['nullable', 'file', 'mimes:jpeg,png,pdf', 'max:10240'],
+            'attachment_key' => ['nullable', 'string'],
+            'attachment_mime' => ['nullable', 'string', Rule::in(['image/jpeg', 'image/png', 'application/pdf'])],
         ];
     }
 

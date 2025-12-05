@@ -99,5 +99,39 @@ class SupabaseStorageService
 
         return true;
     }
-}
 
+    public function generateSignedUploadUrl(string $path, int $expiresIn = 60): ?array
+    {
+        $url = "{$this->baseUrl}/storage/v1/object/sign/{$this->bucket}/{$path}";
+
+        $response = Http::withHeaders([
+            'Authorization' => "Bearer {$this->serviceRoleKey}",
+            'Content-Type' => 'application/json',
+        ])->post($url, [
+            'expires_in' => $expiresIn,
+        ]);
+
+        if (! $response->successful()) {
+            Log::error('Supabase signed upload URL generation failed', [
+                'path' => $path,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return null;
+        }
+
+        $data = $response->json();
+        $signedUrl = $data['signedURL'] ?? null;
+
+        if ($signedUrl) {
+            return [
+                'upload_url' => "{$this->baseUrl}{$signedUrl}",
+                'object_path' => $path,
+                'expires_in' => $expiresIn,
+            ];
+        }
+
+        return null;
+    }
+}

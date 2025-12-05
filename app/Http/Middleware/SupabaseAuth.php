@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
-use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Lcobucci\JWT\Token\Parser;
 use Lcobucci\JWT\UnencryptedToken;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
@@ -45,13 +44,13 @@ class SupabaseAuth
             }
 
             $jwtConfig = Configuration::forAsymmetricSigner(
-                new \Lcobucci\JWT\Signer\Rsa\Sha256(),
+                new \Lcobucci\JWT\Signer\Rsa\Sha256,
                 InMemory::empty(),
                 InMemory::plainText($publicKeyPem)
             );
 
             $jwtConfig->setValidationConstraints(
-                new SignedWith(new \Lcobucci\JWT\Signer\Rsa\Sha256(), InMemory::plainText($publicKeyPem)),
+                new SignedWith(new \Lcobucci\JWT\Signer\Rsa\Sha256, InMemory::plainText($publicKeyPem)),
                 new StrictValidAt(new \Lcobucci\Clock\SystemClock(new \DateTimeZone('UTC')))
             );
 
@@ -70,6 +69,8 @@ class SupabaseAuth
 
             $request->attributes->set('supabase_user_id', $userId);
             $request->attributes->set('supabase_user_email', $claims['email'] ?? null);
+
+            $this->setJwtClaimInDatabase($userId);
 
         } catch (RequiredConstraintsViolated $e) {
             Log::warning('JWT validation failed', ['error' => $e->getMessage()]);
@@ -180,5 +181,23 @@ class SupabaseAuth
 
         return pack('Ca*', 0x80 | strlen($temp), $temp);
     }
-}
 
+    private function setJwtClaimInDatabase(string $userId): void
+    {
+        if (config('database.default') !== 'pgsql') {
+            return;
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::statement(
+                "SELECT set_config('request.jwt.claim.sub', :userId, true)",
+                ['userId' => $userId]
+            );
+        } catch (\Exception $e) {
+            Log::warning('Failed to set JWT claim in database', [
+                'error' => $e->getMessage(),
+                'user_id' => $userId,
+            ]);
+        }
+    }
+}

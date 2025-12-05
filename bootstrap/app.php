@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'supabase.auth' => SupabaseAuth::class,
+            'supabase.rls' => \App\Http\Middleware\ApplySupabaseRls::class,
         ]);
 
         $middleware->web(append: [

@@ -444,6 +444,43 @@ When a task is created with an attachment:
 - URLs expire after 60 seconds for security
 - Frontend should fetch fresh URLs when displaying attachments
 
+## 🔐 Row Level Security (RLS)
+
+The application includes Supabase Row Level Security policies for additional database-level protection. These policies work alongside Laravel's application-level authorization.
+
+### Why RLS is Added
+
+RLS provides defense-in-depth security by enforcing access rules at the database level. Even if application code has vulnerabilities, RLS policies ensure users can only access data they're authorized to see.
+
+### RLS Policies
+
+The RLS policies are defined in `database/rls_policies.sql`:
+
+- **SELECT Policy**: Users can view tasks where they are the creator OR assignee
+- **INSERT Policy**: Only the creator can insert tasks (creator_id must match authenticated user)
+- **UPDATE Policy**: Creator or assignee can update tasks
+- **DELETE Policy**: Only creator can delete tasks
+
+### How Laravel Sets JWT Claims
+
+The `SupabaseAuth` middleware automatically sets the JWT user ID in PostgreSQL session variables on each request:
+
+```php
+SELECT set_config('request.jwt.claim.sub', <user_id>, true);
+```
+
+This allows Supabase's RLS policies to access the authenticated user ID via `auth.uid()` function in the policies. The session variable is set at the beginning of each API request after JWT validation.
+
+### Enabling RLS
+
+To enable RLS policies, run the SQL file in your Supabase SQL Editor:
+
+```sql
+-- Run database/rls_policies.sql in Supabase SQL Editor
+```
+
+**Note**: The backend also uses Service Role Key for storage operations, which bypasses RLS. This is appropriate for backend administrative operations.
+
 ## 🧪 Testing
 
 ### Manual Testing with Postman
@@ -467,7 +504,16 @@ Run specific test files:
 
 ```bash
 php artisan test --filter TaskTest
+php artisan test --filter AuthMiddlewareTest
+php artisan test --filter TaskAuthorizationTest
+php artisan test --filter StorageUploadTest
 ```
+
+### Feature Tests Included
+
+- **AuthMiddlewareTest**: Tests JWT middleware (missing token, invalid token)
+- **TaskAuthorizationTest**: Tests authorization rules (creator can delete, only assignee can complete)
+- **StorageUploadTest**: Tests signed upload URL and attachment_key handling
 
 ## 📁 Project Structure
 
